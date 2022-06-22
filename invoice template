@@ -1,0 +1,320 @@
+///THE MAIN FILE BELOW:
+
+function downloadSheetAsPDF() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetId = ss.getSheetByName("Template").getSheetId(); 
+  var tab2 = ss.getSheetByName("Template");
+  tab2.getRange('A13:I200').activate();
+  tab2.getRange('A13:I200').createFilter();
+  tab2.getRange('B13').activate();
+  var criteria = SpreadsheetApp.newFilterCriteria()
+  .setHiddenValues([''])
+  .build();
+  tab2.getFilter().setColumnFilterCriteria(2, criteria);
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetId = ss.getSheetByName("Template").getSheetId(); 
+  var tab2 = ss.getSheetByName("Template");
+  var pdfNameRange = ss.getRange('D5').activate();
+
+  // // Set the output filename as SheetName.
+  var pdfName = pdfNameRange.getValue()+'-Invoice';
+
+  var ss = SpreadsheetApp.getActive(),
+    id = ss.getId(),
+    sht = ss.getActiveSheet(),
+    shtId = sht.getSheetId(),
+    url =
+      'https://docs.google.com/spreadsheets/d/' +
+      id +
+      '/export' +
+      '?format=pdf&gid=' +
+      shtId;
+  var val = pdfName;//custom pdf name here 
+  val += '.pdf';
+  //can't download with a different filename directly from server
+  //download and remove content-disposition header and serve as a dataURI
+  //Use anchor tag's download attribute to provide a custom filename
+  var res = UrlFetchApp.fetch(url, {
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+  });
+  SpreadsheetApp.getUi().showModelessDialog(
+    HtmlService.createHtmlOutput(
+      '<a target ="_blank" download="' +
+        val +
+        '" href = "data:application/pdf;base64,' +
+        Utilities.base64Encode(res.getContent()) +
+        '">Click here</a> to download, if download did not start automatically' +
+        '<script> \
+        var a = document.querySelector("a"); \
+        a.addEventListener("click",()=>{setTimeout(google.script.host.close,10)}); \
+        a.click(); \
+        </script>'
+    ).setHeight(50),
+    'Downloading PDF..'
+  );
+
+
+
+  // var url = "https://docs.google.com/a/mydomain.org/spreadsheets/d/" + ss.getId() + "/export?exportFormat=pdf&gid=" + sheetId  + "&access_token=" + ScriptApp.getOAuthToken();
+  // var str = '<input type="button" value="Download" onClick="location.href=\'' + url + '\'" >';
+  // var html = HtmlService.createHtmlOutput(str);
+  // SpreadsheetApp.getUi().showModalDialog(html, pdfName);
+  
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var tab2 = ss.getSheetByName("Template");
+  tab2.getFilter().remove();
+
+
+}
+
+
+/// TEMPLATE FOR BLANL PAGE
+
+function invoiceTemplate() {
+  var spreadsheet2 = SpreadsheetApp.openById("1ndSiGkPYrgq9DcWQzznOyZRq_IVPiaQa1YgbdJauLtc");
+  var tab2 = spreadsheet2.getSheetByName("Template");
+  tab2.getRange('A3:G').clearContent();
+  tab2.getFilter().remove();
+
+  tab2.getRange('A14').activate();
+  tab2.getCurrentCell().setFormula('=IF(B14="","",10)');
+  var currentCell = tab2.getCurrentCell();
+  tab2.getRange('A15').activate();
+  tab2.getCurrentCell().setFormula('=IF(B15="","",A14+10)');
+  var currentCell = spreadsheet2.getCurrentCell();
+  tab2.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+  currentCell.activateAsCurrentCell();
+  tab2.getRange('A14:A150').activate();
+  tab2.getRange('A15').copyTo(spreadsheet2.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+  tab2.getRange('A15').activate();
+
+    tab2.getRange('B14').activate();
+    tab2.getCurrentCell().setFormula('=IF(A5="","",UNIQUE(FILTER(Rx Withdraw - Detail!F:L,Rx Withdraw - Detail!D:D=A5,Rx Withdraw - Detail!K:K>0)))');
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('D14').activate();
+    tab2.getCurrentCell().setFormula('=IF(B14="","",SUMIFS(Rx Withdraw - Detail!N:N,Rx Withdraw - Detail!R:R,$A$4&B21)&" Pack(s)")');
+    var currentCell = spreadsheet2.getCurrentCell();
+    tab2.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+    currentCell.activateAsCurrentCell();
+    tab2.getRange('D14:D150').activate();
+    tab2.getRange('D14').copyTo(spreadsheet2.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+    tab2.getRange('D14').activate();
+
+    tab2.getRange('E14').activate();
+    tab2.getCurrentCell().setFormula('=IF(B21="","",ROUNDUP(IFERROR(INDEX(Price!AS:AS,MATCH(Price!A4,Price!J:J,0)),""))&" NGN / 1 Pack (s)")');
+    var currentCell = spreadsheet2.getCurrentCell();
+    tab2.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+    currentCell.activateAsCurrentCell();
+    tab2.getRange('E21:E505').activate();
+    tab2.getRange('E21').copyTo(spreadsheet2.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+    tab2.getRange('E21').activate();
+
+    tab2.getRange('F21').activate();
+    tab2.getCurrentCell().setFormula('=IF(B21="","",IFERROR(INDEX(Price!AS:AS,MATCH(Price!A4,Price!J:J,0)),"")*SUMIFS(Data!N:N,Data!O:O,$A$4&B21))');
+    var currentCell = spreadsheet2.getCurrentCell();
+    tab2.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+    currentCell.activateAsCurrentCell();
+    tab2.getRange('F21:F505').activate();
+    tab2.getRange('F21').copyTo(spreadsheet2.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+    tab2.getRange('F21').activate();
+
+    tab2.getRange('A4').activate();
+    tab2.getCurrentCell().setFormula('=Dashboard!B3');
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A20').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Item")');
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('B20').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Drug ID")');
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('C20').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Drug Name")');
+    var currentCell = tab2.getCurrentCell();
+    
+    tab2.getRange('D20').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Quantity")');    
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('E20').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Price")');    		
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('F20').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Total Amount")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A8').activate();
+    tab2.getCurrentCell().setFormula('=IFERROR(INDEX(Data!E:E,MATCH($A$4,Data!A:A,0)),"")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A9').activate();
+    tab2.getCurrentCell().setFormula('=IFERROR(INDEX(\'ACCOUNT AND PRICING GRO\'!K:K,MATCH(A8,\'ACCOUNT AND PRICING GRO\'!B:B,0)),"")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A10').activate();
+    tab2.getCurrentCell().setFormula('=IFERROR(INDEX(\'ACCOUNT AND PRICING GRO\'!L:L,MATCH(A8,\'ACCOUNT AND PRICING GRO\'!B:B,0)),"")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A17').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Dear  Sir or Madam")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A18').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Thank you for your interest. We offer the following items:")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('E9').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Your Reference:")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('E10').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Valid From: ")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('E11').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Invoice Date: ")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('E12').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Customer Number: ")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('F9').activate();
+    tab2.getCurrentCell().setFormula('=IFERROR(INDEX(Data!A:A,MATCH(A4,Data!A:A,0)),"")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('F10').activate();
+    tab2.getCurrentCell().setFormula('=IFERROR(INDEX(Data!L:L,MATCH($A$4,Data!A:A,0)),"")'); 
+    var currentCell = tab2.getCurrentCell();
+    tab2.getRange('F11').activate();
+    tab2.getCurrentCell().setFormula('=IFERROR(INDEX(Data!L:L,MATCH($A$4,Data!A:A,0)),"")'); 
+    var currentCell = tab2.getCurrentCell();
+
+        tab2.getRange('F12').activate();
+    tab2.getCurrentCell().setFormula('=IFERROR(INDEX(\'ACCOUNT AND PRICING GRO\'!A:A,MATCH(A8,\'ACCOUNT AND PRICING GRO\'!B:B,0)),"")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('F514').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","",SUM(F21:F509))'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('F515').activate();
+    tab2.getCurrentCell().setFormula('=F514'); 
+    var currentCell = tab2.getCurrentCell();
+
+
+    tab2.getRange('C514').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Total Item Net Value")'); 
+    var currentCell = tab2.getCurrentCell();
+
+
+    tab2.getRange('C515').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Total")'); 
+    var currentCell = tab2.getCurrentCell();
+
+
+    tab2.getRange('C516').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","30 days net")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A516').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Payment Terms:")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A518').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Yours sincerely,")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A519').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","CUSTOMER SERVICE 1 NG")'); 
+    var currentCell = tab2.getCurrentCell();
+
+    tab2.getRange('A520').activate();
+    tab2.getCurrentCell().setFormula('=IF(A4="","","Pharma Connect Nigeria")'); 
+    var currentCell = tab2.getCurrentCell();
+
+          var spreadsheet2 = SpreadsheetApp.openById("1ndSiGkPYrgq9DcWQzznOyZRq_IVPiaQa1YgbdJauLtc");
+          var tab2 = spreadsheet2.getSheetByName("Template");
+          tab2.getRange('A20:F506').activate();
+          tab2.getRange('A20:F506').createFilter();
+          tab2.getRange('B20').activate();
+          var criteria = SpreadsheetApp.newFilterCriteria()
+          .setHiddenValues([''])
+          .build();
+          tab2.getFilter().setColumnFilterCriteria(2, criteria);
+
+          //function generatePdf() {
+            // Get active spreadsheet.
+            var sourceSpreadsheet = SpreadsheetApp.getActive();
+
+            
+            var target = SpreadsheetApp.openById("1ndSiGkPYrgq9DcWQzznOyZRq_IVPiaQa1YgbdJauLtc");
+            SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Template").showSheet();
+            SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Price").hideSheet();
+            SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ACCOUNT AND PRICING GRO").hideSheet();
+            SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data").hideSheet();
+            SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Dashboard").hideSheet();
+            
+
+
+            // Get active sheet.
+            var sheets = sourceSpreadsheet.getSheets();
+            var sheetName = sourceSpreadsheet.getActiveSheet().getName();
+            var sourceSheet = sourceSpreadsheet.getSheetByName('Template');
+            var sheetId = SpreadsheetApp.openById("1ndSiGkPYrgq9DcWQzznOyZRq_IVPiaQa1YgbdJauLtc");
+            var targetsheet = sheetId.getSheetByName("Template");
+            var pdfNameRange = targetsheet.getRange('F9').activate();
+
+
+
+            // Set the output filename as SheetName.
+            var pdfName = pdfNameRange.getValue()+'-Invoice';
+
+            // Get folder containing spreadsheet to save pdf in.
+            var parents = DriveApp.getFileById(sourceSpreadsheet.getId()).getParents();
+            if (parents.hasNext()) {
+              var folder = parents.next();
+            }
+            else {
+              folder = DriveApp.getRootFolder();
+            }
+            {
+            // Copy whole spreadsheet.
+            var destSpreadsheet = SpreadsheetApp.open(DriveApp.getFileById(sourceSpreadsheet.getId()).makeCopy("tmp_convert_to_pdf", folder))
+
+            var destSheet = destSpreadsheet.getSheets()[0];
+
+
+            var sourceRange = sourceSheet.getRange(1,521);
+            var sourcevalues = sourceRange.getValues();
+            var destRange = destSheet.getRange(1, 521);
+            destRange.setValues(sourcevalues);
+
+            var theBlob = destSpreadsheet.getBlob().getAs('application/pdf').setName(pdfName);
+            var newFile = folder.createFile(theBlob);
+            }
+{
+      DriveApp.getFileById(destSpreadsheet.getId()).setTrashed(true);
+
+          sheetId.getSheetByName("Dashboard").showSheet();
+          sheetId.getSheetByName("Data").showSheet();
+          sheetId.getSheetByName("Template").hideSheet();
+          
+          
+          }
+
+  tab2.getRange('A5:F').activate();
+  tab2.getRange('A5:F').clearContent();
+
+var sheetId2 = SpreadsheetApp.openById("1ndSiGkPYrgq9DcWQzznOyZRq_IVPiaQa1YgbdJauLtc");
+var targetsheet2 = sheetId2.getSheetByName("Dashboard");
+var nameRange = targetsheet2.getRange('B6').activate();
+ 
+
+}
